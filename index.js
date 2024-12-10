@@ -115,7 +115,5 @@ async function main() {
   let user3 = user_list[2];
   higawari_channel.send(`<@${user1}>, <@${user2}>, <@${user3}>`);
 }
-client.login(process.env.TOKEN).then(() => {
-  setInterval(main, 10000);
-});
+client.login(process.env.TOKEN);
 schedule.scheduleJob("0 0 * * *", main);
