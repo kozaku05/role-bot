@@ -18,6 +18,10 @@ function createEmbed(name1, name2, name3) {
   const member2 = guild.members.cache.get(name2);
   const member3 = guild.members.cache.get(name3);
 
+  if (!member1 || !member2 || !member3) {
+    console.error("メンバーが見つかりません");
+    return;
+  }
   const username1 = member1.user.username;
   const username2 = member2.user.username;
   const username3 = member3.user.username;
@@ -69,10 +73,10 @@ async function deleteRole() {
   const role = await guild.roles.cache.get(process.env.ROLE_ID);
   if (data === "") return;
   let id_list = JSON.parse(data);
-  id_list.forEach((id) => {
+  id_list.forEach(async (id) => {
     const member = guild.members.cache.get(id);
     if (member) {
-      member.roles.remove(role);
+      await member.roles.remove(role);
     }
   });
   fs.writeFileSync("roleDB.json", JSON.stringify([]));
@@ -80,6 +84,10 @@ async function deleteRole() {
 async function addRole() {
   const guild = await client.guilds.cache.get(process.env.GUILD_ID);
   const role = await guild.roles.cache.get(process.env.ROLE_ID);
+  if (!role) {
+    console.log("ロールが存在しません");
+    return;
+  }
   let AllMember = await guild.members.fetch();
   let id_list = [];
   AllMember.forEach((member) => {
@@ -89,15 +97,23 @@ async function addRole() {
   let ramdom_id = [];
   for (let i = 0; i < 3; i++) {
     let id = id_list[Math.floor(Math.random() * id_list.length)];
-    if (ramdom_id.includes(id)) i--;
-    ramdom_id.push(id);
+    if (ramdom_id.includes(id)) {
+      i--;
+    } else {
+      ramdom_id.push(id);
+    }
   }
-  ramdom_id.forEach((id) => {
-    const member = guild.members.cache.get(id);
+  ramdom_id.forEach(async (id) => {
+    const member = await guild.members.cache.get(id);
     console.log(`ロールを追加: ${member.user.username} (${id})`);
-    member.roles.add(role);
+    await member.roles.add(role);
   });
   fs.writeFileSync("roleDB.json", JSON.stringify(ramdom_id));
+}
+async function error() {
+  const guild = client.guilds.cache.get(process.env.GUILD_ID);
+  const channel = await guild.channels.cache.get(process.env.CHANNEL_ID);
+  channel.send("エラーが発生しました");
 }
 async function main() {
   console.log(`実行時刻: ${new Date().toLocaleString("ja-JP")}`);
@@ -106,6 +122,9 @@ async function main() {
   let user_list = JSON.parse(fs.readFileSync("roleDB.json", "utf8"));
   const guild = client.guilds.cache.get(process.env.GUILD_ID);
   const embed = createEmbed(user_list[0], user_list[1], user_list[2]);
+  if (!embed) {
+    return error();
+  }
   const channel = await guild.channels.cache.get(process.env.CHANNEL_ID);
   channel.send(embed);
   const higawari_channel = await guild.channels.cache.get(
