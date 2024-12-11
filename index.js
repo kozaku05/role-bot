@@ -106,7 +106,7 @@ async function addRole() {
   }
   ramdom_id.forEach(async (id) => {
     const member = await guild.members.cache.get(id);
-    console.log(`ロールを���加: ${member.user.username} (${id})`);
+    console.log(`ロールを追加: ${member.user.username} (${id})`);
     await member.roles.add(role);
   });
   fs.writeFileSync("roleDB.json", JSON.stringify(ramdom_id));
