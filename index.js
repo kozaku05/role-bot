@@ -100,6 +100,7 @@ async function addRole() {
   fs.writeFileSync("roleDB.json", JSON.stringify(ramdom_id));
 }
 async function main() {
+  console.log(`実行時刻: ${new Date().toLocaleString("ja-JP")}`);
   await deleteRole();
   await addRole();
   let user_list = JSON.parse(fs.readFileSync("roleDB.json", "utf8"));
@@ -116,4 +117,4 @@ async function main() {
   higawari_channel.send(`<@${user1}>, <@${user2}>, <@${user3}>`);
 }
 client.login(process.env.TOKEN);
-schedule.scheduleJob("0 0 * * *", main);
+schedule.scheduleJob("0 0 0 * * *", main);
