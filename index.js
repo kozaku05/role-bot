@@ -34,7 +34,7 @@ function createEmbed(name1, name2, name3) {
       {
         title: "🎉 本日の日替わりメンバー 🎉",
         description:
-          "おめでと���ございます！今日の幸運なメンバーが決定しました！",
+          "おめでとうございます！今日の幸運なメンバーが決定しました！",
         color: 0xffd700,
         fields: [
           {
