@@ -12,6 +12,17 @@ const client = new Client({
   ],
 });
 
+client.once("ready", async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+  schedule.scheduleJob(
+    {
+      rule: "0 0 * * *",
+      tz: "Asia/Tokyo",
+    },
+    main
+  );
+});
+
 function createEmbed(name1, name2, name3) {
   const guild = client.guilds.cache.get(process.env.GUILD_ID);
   const member1 = guild.members.cache.get(name1);
@@ -64,18 +75,14 @@ function createEmbed(name1, name2, name3) {
   return embedMessage;
 }
 
-client.once("ready", async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-  schedule.scheduleJob("0 0 * * *", main);
-});
 async function deleteRole() {
   let data = fs.readFileSync("roleDB.json", "utf8");
-  const guild = await client.guilds.cache.get(process.env.GUILD_ID);
-  const role = await guild.roles.cache.get(process.env.ROLE_ID);
+  const guild = await client.guilds.fetch(process.env.GUILD_ID);
+  const role = await guild.roles.fetch(process.env.ROLE_ID);
   if (data === "") return;
   let id_list = JSON.parse(data);
   id_list.forEach(async (id) => {
-    const member = guild.members.cache.get(id);
+    const member = await guild.members.fetch(id);
     if (member) {
       await member.roles.remove(role);
     }
@@ -83,8 +90,8 @@ async function deleteRole() {
   fs.writeFileSync("roleDB.json", JSON.stringify([]));
 }
 async function addRole() {
-  const guild = await client.guilds.cache.get(process.env.GUILD_ID);
-  const role = await guild.roles.cache.get(process.env.ROLE_ID);
+  const guild = await client.guilds.fetch(process.env.GUILD_ID);
+  const role = await guild.roles.fetch(process.env.ROLE_ID);
   if (!role) {
     console.log("ロールが存在しません");
     return;
@@ -105,15 +112,15 @@ async function addRole() {
     }
   }
   ramdom_id.forEach(async (id) => {
-    const member = await guild.members.cache.get(id);
+    const member = await guild.members.fetch(id);
     console.log(`ロールを追加: ${member.user.username} (${id})`);
     await member.roles.add(role);
   });
   fs.writeFileSync("roleDB.json", JSON.stringify(ramdom_id));
 }
 async function error() {
-  const guild = client.guilds.cache.get(process.env.GUILD_ID);
-  const channel = await guild.channels.cache.get(process.env.CHANNEL_ID);
+  const guild = await client.guilds.fetch(process.env.GUILD_ID);
+  const channel = await guild.channels.fetch(process.env.CHANNEL_ID);
   channel.send("エラーが発生しました");
 }
 async function main() {
@@ -121,16 +128,14 @@ async function main() {
   await deleteRole();
   await addRole();
   let user_list = JSON.parse(fs.readFileSync("roleDB.json", "utf8"));
-  const guild = client.guilds.cache.get(process.env.GUILD_ID);
+  const guild = await client.guilds.fetch(process.env.GUILD_ID);
   const embed = createEmbed(user_list[0], user_list[1], user_list[2]);
   if (!embed) {
     return error();
   }
-  const channel = await guild.channels.cache.get(process.env.CHANNEL_ID);
+  const channel = await guild.channels.fetch(process.env.CHANNEL_ID);
   channel.send(embed);
-  const higawari_channel = await guild.channels.cache.get(
-    process.env.HIGAWARI_ID
-  );
+  const higawari_channel = await guild.channels.fetch(process.env.HIGAWARI_ID);
   let user1 = user_list[0];
   let user2 = user_list[1];
   let user3 = user_list[2];
